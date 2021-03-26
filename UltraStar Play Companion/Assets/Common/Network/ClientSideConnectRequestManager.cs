@@ -10,7 +10,7 @@ using UniRx;
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
 
-public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
+public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, IInjectionFinishedListener
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void InitOnLoad()
@@ -36,7 +36,13 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
      * This version number must to be increased when introducing breaking changes.
      */
     public static readonly int protocolVersion = 1;
-    
+
+    [Inject]
+    private Settings settings;
+
+    [Inject]
+    private ClientSideMicSampleRecorder clientSideMicSampleRecorder;
+
     private const float ConnectRequestPauseInSeconds = 1f;
     private float nextConnectRequestTime;
 
@@ -46,8 +52,6 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     private UdpClient clientUdpClient;
     private const int ConnectPortOnServer = 34567;
     private const int ConnectPortOnClient = 34568;
-
-    private string defaultClientId = "MyCompanionApp";
 
     private bool isListeningForConnectResponse;
 
@@ -60,9 +64,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
 
     private ConcurrentQueue<ConnectResponseDto> serverResponseQueue = new ConcurrentQueue<ConnectResponseDto>();
 
-    private ClientSideMicSampleRecorder clientSideMicSampleRecorder;
-    
-    private void Awake()
+    public void OnInjectionFinished()
     {
         InitSingleInstance();
         
@@ -72,16 +74,16 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         }
 
         clientUdpClient = new UdpClient(ConnectPortOnClient);
-        // Move object to top level in scene hierarchy.
-        // Otherwise this object will be destroyed with its parent, even when DontDestroyOnLoad is used. 
-        transform.SetParent(null);
-        DontDestroyOnLoad(gameObject);
-        
-        clientSideMicSampleRecorder = ClientSideMicSampleRecorder.Instance;
+        GameObjectUtils.SetTopLevelGameObjectAndDontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
+        if (settings == null || clientSideMicSampleRecorder == null)
+        {
+            throw new UnityException("Shit!");
+        }
+        
         ThreadPool.QueueUserWorkItem(poolHandle =>
         {
             ClientListenForConnectResponse();
@@ -108,7 +110,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         
         if (!IsConnected
             && Time.time > nextConnectRequestTime
-            && clientSideMicSampleRecorder.SampleRateHz > 0)
+            && clientSideMicSampleRecorder.SampleRateHz.Value > 0)
         {
             nextConnectRequestTime = Time.time + ConnectRequestPauseInSeconds;
             ClientSendConnectRequest();
@@ -195,8 +197,8 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
             ConnectRequestDto connectRequestDto = new ConnectRequestDto
             {
                 protocolVersion = protocolVersion,
-                clientName = defaultClientId,
-                microphoneSampleRate = clientSideMicSampleRecorder.SampleRateHz,
+                clientName = settings.ClientName,
+                microphoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
             };
             byte[] requestBytes = Encoding.UTF8.GetBytes(connectRequestDto.ToJson());
             // UDP Broadcast (255.255.255.255)

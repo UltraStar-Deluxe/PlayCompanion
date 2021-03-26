@@ -6,7 +6,6 @@
         "Plugins",
         "UniRx",
         "UniInject",
-		"SimpleHttpServerForUnity",
         "UnityEngine.UIElementsModule",
         "UnityEngine.UIElementsGameObjectsModule",
         "Unity.InputSystem"

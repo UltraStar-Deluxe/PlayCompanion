@@ -18,58 +18,78 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
             return GameObjectUtils.FindComponentWithTag<ClientSideMicSampleRecorder>("ClientSideMicSampleRecorder");
         }
     }
-    
-    public string DeviceName { get; private set; }
 
-    public bool playRecordedAudio;
-    
-    public bool IsRecording { get; private set; }
-    public int SampleRateHz { get; private set; }
+    private const int DefaultSampleRateHz = 44100;
+
+    public ReactiveProperty<string> DeviceName { get; private set; } = new ReactiveProperty<string>();
+    public ReactiveProperty<int> SampleRateHz { get; private set; } = new ReactiveProperty<int>();
+    public ReactiveProperty<bool> IsRecording { get; private set; } = new ReactiveProperty<bool>();
     
     // The MicSamples array has the length of the SampleRateHz (one float value per sample.)
-    public float[] MicSamples { get; private set; }
+    private float[] micSampleBuffer;
 
-    private AudioClip micAudioClip;
-    
     [Inject(searchMethod = SearchMethods.GetComponent)]
     private AudioSource audioSource;
     
-    private int lastSamplePosition;
+    [Inject]
+    private Settings settings;
     
-    private Subject<RecordingEvent> recordingEventStream = new Subject<RecordingEvent>();
-    public IObservable<RecordingEvent> RecordingEventStream => recordingEventStream;
+    private AudioClip micAudioClip;
+    
+    private int lastSamplePosition;
     
     private readonly Subject<RecordingDeviceEvent> selectedRecordingDeviceEventStream = new Subject<RecordingDeviceEvent>();
     public IObservable<RecordingDeviceEvent> SelectedRecordingDeviceEventStream => selectedRecordingDeviceEventStream;
     
+    private readonly Subject<RecordingEvent> recordingEventStream = new Subject<RecordingEvent>();
+    public IObservable<RecordingEvent> RecordingEventStream => recordingEventStream;
+    
     private void Start()
     {
-        SelectRecordingDevice(Microphone.devices.FirstOrDefault());
+        string initialRecordingDeviceName = settings.RecordingDeviceName.IsNullOrEmpty()
+            ? Microphone.devices.FirstOrDefault()
+            : settings.RecordingDeviceName;
+        SelectRecordingDevice(initialRecordingDeviceName);
+        DeviceName.Subscribe(newValue => settings.RecordingDeviceName = newValue);
     }
 
-    public void SelectRecordingDevice(string deviceName)
+    public void SelectRecordingDevice(string deviceName, int sampleRate = 0)
     {
-        if (IsRecording)
+        if (IsRecording.Value)
         {
             StopRecording();
         }
-        DeviceName = deviceName;
+        DeviceName.Value = deviceName;
         Microphone.GetDeviceCaps(deviceName, out int minFreq, out int maxFreq);
-        SampleRateHz = maxFreq;
-        if (SampleRateHz > 0)
+
+        if (sampleRate == minFreq)
         {
-            MicSamples = new float[SampleRateHz];
+            SampleRateHz.Value = minFreq;
+        }
+        else
+        {
+            SampleRateHz.Value = maxFreq;
         }
 
-        selectedRecordingDeviceEventStream.OnNext(new RecordingDeviceEvent(DeviceName));
+        if (SampleRateHz.Value == 0)
+        {
+            // A value of 0 indicates that any sample rate can be used
+            SampleRateHz.Value = DefaultSampleRateHz;
+        }
+        
+        if (SampleRateHz.Value > 0)
+        {
+            micSampleBuffer = new float[SampleRateHz.Value];
+        }
+
+        selectedRecordingDeviceEventStream.OnNext(new RecordingDeviceEvent(DeviceName.Value, minFreq, maxFreq));
         
         Debug.Log($"Selected recording device '{DeviceName}' with sample rate {SampleRateHz} Hz");
     }
 
     private void Update()
     {
-        UpdateMicrophoneAudioPlayback();
-        if (IsRecording)
+        if (IsRecording.Value)
         {
             UpdateRecording();
         }
@@ -77,15 +97,15 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
 
     public void StartRecording()
     {
-        if (IsRecording)
+        if (IsRecording.Value)
         {
             throw new UnityException("Already recording");
         }
-        if (DeviceName.IsNullOrEmpty())
+        if (DeviceName.Value.IsNullOrEmpty())
         {
             throw new UnityException("Cannot start recording. No recording device selected.");
         }
-        if (SampleRateHz <= 0)
+        if (SampleRateHz.Value <= 0)
         {
             throw new UnityException($"Cannot start recording. Sample rate is invalid: {SampleRateHz}.");
         }
@@ -94,16 +114,16 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
 
         // Code for low-latency microphone input taken from
         // https://support.unity3d.com/hc/en-us/articles/206485253-How-do-I-get-Unity-to-playback-a-Microphone-input-in-real-time-
-        micAudioClip = UnityEngine.Microphone.Start(DeviceName, true, 1, SampleRateHz);
+        micAudioClip = Microphone.Start(DeviceName.Value, true, 1, SampleRateHz.Value);
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
-        while (UnityEngine.Microphone.GetPosition(DeviceName) <= 0)
+        while (Microphone.GetPosition(DeviceName.Value) <= 0)
         {
             // <Busy waiting>
             // Emergency exit
             if (stopwatch.ElapsedMilliseconds > 1000)
             {
-                IsRecording = false;
+                IsRecording.Value = false;
                 Debug.LogError("Microphone did not provide any samples. Took emergency exit out of busy waiting.");
                 return;
             }
@@ -114,12 +134,12 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
         audioSource.clip = micAudioClip;
         audioSource.loop = true;
         
-        IsRecording = true;
+        IsRecording.Value = true;
     }
     
     private void UpdateRecording()
     {
-        if (!IsRecording)
+        if (!IsRecording.Value)
         {
             return;
         }
@@ -132,17 +152,17 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
         }
 
         // Fill buffer with raw sample data from microphone
-        int currentSamplePosition = UnityEngine.Microphone.GetPosition(DeviceName);
-        micAudioClip.GetData(MicSamples, currentSamplePosition);
+        int currentSamplePosition = Microphone.GetPosition(DeviceName.Value);
+        micAudioClip.GetData(micSampleBuffer, currentSamplePosition);
 
         // Process the portion that has been buffered by Unity since the last frame.
         // New samples come into the buffer "from the right", i.e., highest index holds the newest sample.
         int newSamplesCount = GetNewSampleCountInCircularBuffer(lastSamplePosition, currentSamplePosition);
-        int newSamplesStartIndex = MicSamples.Length - newSamplesCount;
-        int newSamplesEndIndex = MicSamples.Length - 1;
+        int newSamplesStartIndex = micSampleBuffer.Length - newSamplesCount;
+        int newSamplesEndIndex = micSampleBuffer.Length - 1;
 
         // Notify listeners
-        RecordingEvent recordingEvent = new RecordingEvent(MicSamples, newSamplesStartIndex, newSamplesEndIndex);
+        RecordingEvent recordingEvent = new RecordingEvent(micSampleBuffer, newSamplesStartIndex, newSamplesEndIndex);
         recordingEventStream.OnNext(recordingEvent);
 
         lastSamplePosition = currentSamplePosition;
@@ -150,7 +170,7 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     
     private int GetNewSampleCountInCircularBuffer(int lastSamplePosition, int currentSamplePosition)
     {
-        int bufferLength = MicSamples.Length;
+        int bufferLength = micSampleBuffer.Length;
 
         // Check if the recording re-started from index 0 after reaching the end of the buffer.
         if (currentSamplePosition <= lastSamplePosition)
@@ -166,19 +186,7 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     public void StopRecording()
     {
         Debug.Log($"Stopping recording with '{DeviceName}'");
-        IsRecording = false;
-        UnityEngine.Microphone.End(DeviceName);
-    }
-    
-    private void UpdateMicrophoneAudioPlayback()
-    {
-        if (playRecordedAudio && !audioSource.isPlaying)
-        {
-            audioSource.Play();
-        }
-        else if (!playRecordedAudio && audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
+        IsRecording.Value = false;
+        Microphone.End(DeviceName.Value);
     }
 }

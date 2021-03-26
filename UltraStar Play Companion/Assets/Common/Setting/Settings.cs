@@ -3,7 +3,8 @@
 [Serializable]
 public class Settings
 {
-    public RecordingSettings RecordingSettings { get; set; }
-    public GraphicSettings GraphicSettings { get; set; } = new GraphicSettings();
-    public DeveloperSettings DeveloperSettings { get; set; } = new DeveloperSettings();
+    public string ClientName { get; set; } = "MyCompanionApp";
+    public string RecordingDeviceName { get; set; }
+    public int TargetFps { get; set; } = 30;
+    public bool ShowFps { get; set; }
 }

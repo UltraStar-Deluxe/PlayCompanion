@@ -19,7 +19,7 @@ public class ApplicationManager : MonoBehaviour
 
     void Start()
     {
-        targetFrameRate = SettingsManager.Instance.Settings.GraphicSettings.targetFps;
+        targetFrameRate = SettingsManager.Instance.Settings.TargetFps;
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = targetFrameRate;
     }
