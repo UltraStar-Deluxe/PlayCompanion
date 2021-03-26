@@ -1,0 +1,25 @@
+{
+    "name": "Common",
+    "rootNamespace": "",
+    "references": [
+        "Serilog",
+        "Plugins",
+        "UniRx",
+        "UniInject",
+		"SimpleHttpServerForUnity",
+        "UnityEngine.UIElementsModule",
+        "UnityEngine.UIElementsGameObjectsModule",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
