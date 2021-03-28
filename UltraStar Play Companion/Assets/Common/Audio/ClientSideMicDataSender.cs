@@ -31,6 +31,8 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
     public IPEndPoint serverMicDataReceiverEndPoint;
 
     private byte[] receiveByteArray;
+
+    private Thread receiveDataThread;
     
     private void Start()
     {
@@ -40,7 +42,7 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
         // Receive data from server.
         // So far, the server only sends a still-alive check, which fails automatically when the connection is lost.
         receiveByteArray = new byte[2048];
-        ThreadPool.QueueUserWorkItem(poolHandler =>
+        receiveDataThread = new Thread(() => 
         {
             while (true)
             {
@@ -53,6 +55,7 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
                 Thread.Sleep(250);
             }
         });
+        receiveDataThread.Start();
     }
 
     private void HandleNewMicSamples(RecordingEvent recordingEvent)

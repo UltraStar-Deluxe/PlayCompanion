@@ -6,6 +6,7 @@ using UniInject;
 using UniRx;
 using UnityEngine.UI;
 using Button = UnityEngine.UIElements.Button;
+using Toggle = UnityEngine.UIElements.Toggle;
 
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
@@ -17,6 +18,9 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
     [InjectedInInspector]
     public UIDocument uiDoc;
+    
+    [InjectedInInspector]
+    public AudioWaveFormVisualizer audioWaveFormVisualizer;
 
     [Inject]
     private ClientSideConnectRequestManager clientSideConnectRequestManager;
@@ -48,14 +52,14 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject(key = "#clientNameTextField")]
     private TextField clientNameTextField;
     
-    [Inject(key = "#controlsContainer")]
-    private VisualElement controlsContainer;
+    [Inject(key = "#visualizeAudioToggle")]
+    private Toggle visualizeAudioToggle;
+    
+    [Inject(key = "#audioWaveForm")]
+    private VisualElement audioWaveForm;
 
     [Inject(key = "#fpsText")]
     private Label fpsText;
-    
-    [Inject(searchMethod = SearchMethods.FindObjectOfType)]
-    private AudioWaveFormVisualizer audioWaveFormVisualizer;
 
     private float frameCountTime;
     private int frameCount;
@@ -72,7 +76,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
             .Subscribe(recordingDeviceEvent => UpdateSampleRateButtons(recordingDeviceEvent));
 
         // All controls are hidden until a connection has been established.
-        controlsContainer.Hide();
+        uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
         
         toggleRecordingButton.RegisterCallbackButtonTriggered(ToggleRecording);
         reconnectButton.RegisterCallbackButtonTriggered(() => clientSideConnectRequestManager.CloseConnectionAndReconnect());
@@ -81,6 +85,14 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         clientNameTextField.RegisterCallback<NavigationSubmitEvent>(_ => OnClientNameTextFieldChanged());
         clientNameTextField.RegisterCallback<BlurEvent>(_ => OnClientNameTextFieldChanged());
 
+        visualizeAudioToggle.value = settings.ShowAudioWaveForm;
+        audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
+        visualizeAudioToggle.RegisterValueChangedCallback(changeEvent =>
+        {
+            audioWaveForm.SetVisible(changeEvent.newValue);
+            settings.ShowAudioWaveForm = changeEvent.newValue;
+        });
+        
         clientSideConnectRequestManager.ConnectEventStream
             .Subscribe(UpdateConnectionStatus);
         
@@ -89,7 +101,11 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
     private void Update()
     {
-        audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.micSampleBuffer);
+        if (audioWaveForm.style.display != DisplayStyle.None)
+        {
+            Debug.Log(">>>>>>>>>>>>>>>>>DrawWaveFormMinAndMaxValues");
+            audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.micSampleBuffer);
+        }
         UpdateFps();
     }
 
@@ -137,7 +153,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         if (connectEvent.IsSuccess)
         {
             connectionStatusText.text = $"Connected To {connectEvent.ServerIpEndPoint.Address}";
-            controlsContainer.Show();
+            uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
             toggleRecordingButton.Focus();
             UpdateRecordingDeviceButtons();
         }
@@ -147,7 +163,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
                 ? $"Connecting...\n(attempt {connectEvent.ConnectRequestCount} failed)"
                 : "Connecting...";
             
-            controlsContainer.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
+            uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
         }
     }
 

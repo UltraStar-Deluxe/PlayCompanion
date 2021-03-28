@@ -46,7 +46,7 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     
     private void Start()
     {
-        string initialRecordingDeviceName = settings.RecordingDeviceName.IsNullOrEmpty()
+        string initialRecordingDeviceName = settings.RecordingDeviceName.IsNullOrEmpty() || !Microphone.devices.Contains(settings.RecordingDeviceName)
             ? Microphone.devices.FirstOrDefault()
             : settings.RecordingDeviceName;
         SelectRecordingDevice(initialRecordingDeviceName);
@@ -193,6 +193,11 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     
     public void StopRecording()
     {
+        if (!IsRecording.Value)
+        {
+            return;
+        }
+        
         Debug.Log($"Stopping recording with '{DeviceName}'");
         IsRecording.Value = false;
         Microphone.End(DeviceName.Value);

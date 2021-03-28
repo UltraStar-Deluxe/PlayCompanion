@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 using UniInject;
 using UniRx;
@@ -65,6 +66,8 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     private ConcurrentQueue<ConnectResponseDto> serverResponseQueue = new ConcurrentQueue<ConnectResponseDto>();
 
     private bool isApplicationPaused;
+
+    private Thread acceptMessageFromServerThread;
     
     private void Start()
     {
@@ -77,13 +80,14 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         GameObjectUtils.SetTopLevelGameObjectAndDontDestroyOnLoad(gameObject);
         
         clientUdpClient = new UdpClient(ConnectPortOnClient);
-        ThreadPool.QueueUserWorkItem(poolHandle =>
+        acceptMessageFromServerThread = new Thread(poolHandle =>
         {
             while (!hasBeenDestroyed)
             {
                 ClientAcceptMessageFromServer();
             }
         });
+        acceptMessageFromServerThread.Start();
     }
 
     private void Update()
@@ -143,6 +147,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         {
             Debug.Log("Client listening for connect response on port " + clientUdpClient.GetPort());
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            // Receive is a blocking call
             byte[] receivedBytes = clientUdpClient.Receive(ref serverIpEndPoint);
             string message = Encoding.UTF8.GetString(receivedBytes);
             HandleServerMessage(serverIpEndPoint, message);
