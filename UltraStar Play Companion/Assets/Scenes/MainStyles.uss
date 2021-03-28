@@ -1,7 +1,3 @@
-.unity-label {
-    color: white;
-}
-
 .unity-button {
     background-color: rgb(66, 163, 231);
     color: rgb(255, 255, 255);
@@ -16,6 +12,7 @@
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     flex-grow: 1;
+    white-space: normal;
 }
 
 .unity-button:hover {
@@ -44,6 +41,7 @@
 
 .unity-text-element {
     font-size: 24px;
+    color: rgba(255, 255, 255, 255);
 }
 
 .stopRecordingButton:hover {

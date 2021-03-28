@@ -13,6 +13,8 @@ using Toggle = UnityEngine.UIElements.Toggle;
 
 public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBinder
 {
+    public const int ConnectRequestCountShowTroubleshootingHintThreshold = 3;
+    
     [InjectedInInspector]
     public TextAsset versionPropertiesTextAsset;
 
@@ -46,9 +48,6 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject(key = "#selectedRecordingDeviceText")]
     private Label selectedRecordingDeviceText;
     
-    [Inject(key = "#reconnectButton")]
-    private Button reconnectButton;
-    
     [Inject(key = "#clientNameTextField")]
     private TextField clientNameTextField;
     
@@ -61,6 +60,9 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject(key = "#fpsText")]
     private Label fpsText;
 
+    [Inject(key = "#connectionThroubleshootingText")]
+    private Label connectionThroubleshootingText;
+    
     private float frameCountTime;
     private int frameCount;
     
@@ -77,9 +79,9 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
         // All controls are hidden until a connection has been established.
         uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
+        connectionThroubleshootingText.Hide();
         
         toggleRecordingButton.RegisterCallbackButtonTriggered(ToggleRecording);
-        reconnectButton.RegisterCallbackButtonTriggered(() => clientSideConnectRequestManager.CloseConnectionAndReconnect());
 
         clientNameTextField.value = settings.ClientName;
         clientNameTextField.RegisterCallback<NavigationSubmitEvent>(_ => OnClientNameTextFieldChanged());
@@ -103,7 +105,6 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         if (audioWaveForm.style.display != DisplayStyle.None)
         {
-            Debug.Log(">>>>>>>>>>>>>>>>>DrawWaveFormMinAndMaxValues");
             audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.micSampleBuffer);
         }
         UpdateFps();
@@ -154,6 +155,8 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         {
             connectionStatusText.text = $"Connected To {connectEvent.ServerIpEndPoint.Address}";
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
+            audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
+            connectionThroubleshootingText.Hide();
             toggleRecordingButton.Focus();
             UpdateRecordingDeviceButtons();
         }
@@ -164,6 +167,14 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
                 : "Connecting...";
             
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
+            if (connectEvent.ConnectRequestCount > ConnectRequestCountShowTroubleshootingHintThreshold)
+            {
+                connectionThroubleshootingText.Show();
+                connectionThroubleshootingText.text = "Troubleshooting hints:\n"
+                    + "- Check main game is running\n\n"
+                    + "- Check main game and Companion app use the same WLAN\n\n"
+                    + "- Try to temporarily disable firewall (on Windows)\n\n";
+            }
         }
     }
 
