@@ -94,25 +94,25 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     {
         while (serverResponseQueue.TryDequeue(out ConnectResponseDto connectResponseDto))
         {
-            if (connectResponseDto.errorMessage.IsNullOrEmpty()
-                && connectResponseDto.microphonePort > 0)
+            if (connectResponseDto.ErrorMessage.IsNullOrEmpty()
+                && connectResponseDto.MicrophonePort > 0)
             {
-                serverMicrophonePort = connectResponseDto.microphonePort;
+                serverMicrophonePort = connectResponseDto.MicrophonePort;
                 connectEventStream.OnNext(new ConnectEvent
                 {
                     IsSuccess = true,
                     ConnectRequestCount = connectRequestCount,
                     MicrophonePort = serverMicrophonePort,
-                    ServerIpEndPoint = connectResponseDto.serverIpEndPoint,
+                    ServerIpEndPoint = connectResponseDto.ServerIpEndPoint,
                 });
                 connectRequestCount = 0;            
             }
-            else if (!connectResponseDto.errorMessage.IsNullOrEmpty())
+            else if (!connectResponseDto.ErrorMessage.IsNullOrEmpty())
             {
                 connectEventStream.OnNext(new ConnectEvent
                 {
                     ConnectRequestCount = connectRequestCount,
-                    errorMessage = connectResponseDto.errorMessage,
+                    errorMessage = connectResponseDto.ErrorMessage,
                 });
             }
         }
@@ -173,27 +173,27 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         try
         {
             ConnectResponseDto connectResponseDto = JsonConverter.FromJson<ConnectResponseDto>(message);
-            if (!connectResponseDto.errorMessage.IsNullOrEmpty())
+            if (!connectResponseDto.ErrorMessage.IsNullOrEmpty())
             {
-                throw new ConnectRequestException("Server returned error message: " + connectResponseDto.errorMessage);
+                throw new ConnectRequestException("Server returned error message: " + connectResponseDto.ErrorMessage);
             }
-            if (connectResponseDto.clientName.IsNullOrEmpty())
+            if (connectResponseDto.ClientName.IsNullOrEmpty())
             {
                 throw new ConnectRequestException("Malformed ConnectResponse: missing clientId.");
             }
-            if (connectResponseDto.microphonePort <= 0)
+            if (connectResponseDto.MicrophonePort <= 0)
             {
                 throw new ConnectRequestException("Malformed ConnectResponse: invalid microphonePort.");
             }
 
-            connectResponseDto.serverIpEndPoint = serverIpEndPoint;
+            connectResponseDto.ServerIpEndPoint = serverIpEndPoint;
             serverResponseQueue.Enqueue(connectResponseDto);
         }
         catch (Exception e)
         {
             serverResponseQueue.Enqueue(new ConnectResponseDto
             {
-                errorMessage = e.Message
+                ErrorMessage = e.Message
             });
         }
     }
@@ -215,9 +215,9 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         {
             ConnectRequestDto connectRequestDto = new ConnectRequestDto
             {
-                protocolVersion = ProtocolVersion,
-                clientName = settings.ClientName,
-                microphoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
+                ProtocolVersion = ProtocolVersion,
+                ClientName = settings.ClientName,
+                MicrophoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
             };
             byte[] requestBytes = Encoding.UTF8.GetBytes(connectRequestDto.ToJson());
             // UDP Broadcast (255.255.255.255)
