@@ -36,7 +36,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     /**
      * This version number must to be increased when introducing breaking changes.
      */
-    public static readonly int protocolVersion = 1;
+    public const int ProtocolVersion = 1;
 
     [Inject]
     private Settings settings;
@@ -94,7 +94,8 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     {
         while (serverResponseQueue.TryDequeue(out ConnectResponseDto connectResponseDto))
         {
-            if (connectResponseDto.microphonePort > 0)
+            if (connectResponseDto.errorMessage.IsNullOrEmpty()
+                && connectResponseDto.microphonePort > 0)
             {
                 serverMicrophonePort = connectResponseDto.microphonePort;
                 connectEventStream.OnNext(new ConnectEvent
@@ -105,6 +106,14 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
                     ServerIpEndPoint = connectResponseDto.serverIpEndPoint,
                 });
                 connectRequestCount = 0;            
+            }
+            else if (!connectResponseDto.errorMessage.IsNullOrEmpty())
+            {
+                connectEventStream.OnNext(new ConnectEvent
+                {
+                    ConnectRequestCount = connectRequestCount,
+                    errorMessage = connectResponseDto.errorMessage,
+                });
             }
         }
         
@@ -161,22 +170,36 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     private void HandleServerMessage(IPEndPoint serverIpEndPoint, string message)
     {
         Debug.Log($"Received message from server {serverIpEndPoint} ({serverIpEndPoint.Address}): '{message}'");
-        ConnectResponseDto connectResponseDto = JsonConverter.FromJson<ConnectResponseDto>(message);
-        if (connectResponseDto.clientName.IsNullOrEmpty())
+        try
         {
-            throw new ConnectRequestException("Malformed ConnectResponse: missing clientId.");
-        }
-        if (connectResponseDto.microphonePort <= 0)
-        {
-            throw new ConnectRequestException("Malformed ConnectResponse: invalid microphonePort.");
-        }
+            ConnectResponseDto connectResponseDto = JsonConverter.FromJson<ConnectResponseDto>(message);
+            if (!connectResponseDto.errorMessage.IsNullOrEmpty())
+            {
+                throw new ConnectRequestException("Server returned error message: " + connectResponseDto.errorMessage);
+            }
+            if (connectResponseDto.clientName.IsNullOrEmpty())
+            {
+                throw new ConnectRequestException("Malformed ConnectResponse: missing clientId.");
+            }
+            if (connectResponseDto.microphonePort <= 0)
+            {
+                throw new ConnectRequestException("Malformed ConnectResponse: invalid microphonePort.");
+            }
 
-        connectResponseDto.serverIpEndPoint = serverIpEndPoint;
-        serverResponseQueue.Enqueue(connectResponseDto);
+            connectResponseDto.serverIpEndPoint = serverIpEndPoint;
+            serverResponseQueue.Enqueue(connectResponseDto);
+        }
+        catch (Exception e)
+        {
+            serverResponseQueue.Enqueue(new ConnectResponseDto
+            {
+                errorMessage = e.Message
+            });
+        }
     }
     
     private void ClientSendConnectRequest()
-    {   
+    {
         if (connectRequestCount > 0)
         {
             // Last attempt failed
@@ -192,7 +215,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
         {
             ConnectRequestDto connectRequestDto = new ConnectRequestDto
             {
-                protocolVersion = protocolVersion,
+                protocolVersion = ProtocolVersion,
                 clientName = settings.ClientName,
                 microphoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
             };

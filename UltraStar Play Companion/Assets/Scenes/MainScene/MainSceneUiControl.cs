@@ -63,6 +63,9 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject(key = "#connectionThroubleshootingText")]
     private Label connectionThroubleshootingText;
     
+    [Inject(key = "#serverErrorResponseText")]
+    private Label serverErrorResponseText;
+
     private float frameCountTime;
     private int frameCount;
     
@@ -80,13 +83,14 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         // All controls are hidden until a connection has been established.
         uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
         connectionThroubleshootingText.Hide();
+        serverErrorResponseText.Hide();
         
         toggleRecordingButton.RegisterCallbackButtonTriggered(ToggleRecording);
 
         clientNameTextField.value = settings.ClientName;
         clientNameTextField.RegisterCallback<NavigationSubmitEvent>(_ => OnClientNameTextFieldChanged());
         clientNameTextField.RegisterCallback<BlurEvent>(_ => OnClientNameTextFieldChanged());
-
+        
         visualizeAudioToggle.value = settings.ShowAudioWaveForm;
         audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
         visualizeAudioToggle.RegisterValueChangedCallback(changeEvent =>
@@ -157,6 +161,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
             audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
             connectionThroubleshootingText.Hide();
+            serverErrorResponseText.Hide();
             toggleRecordingButton.Focus();
             UpdateRecordingDeviceButtons();
         }
@@ -174,6 +179,12 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
                     + "- Check main game is running\n\n"
                     + "- Check main game and Companion app use the same WLAN\n\n"
                     + "- Try to temporarily disable firewall (on Windows)\n\n";
+            }
+
+            if (!connectEvent.errorMessage.IsNullOrEmpty())
+            {
+                serverErrorResponseText.Show();
+                serverErrorResponseText.text = connectEvent.errorMessage;
             }
         }
     }
