@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UniInject;
 using UniRx;
-using UnityEngine.UI;
+using UnityEngine.Networking;
 using Button = UnityEngine.UIElements.Button;
 using Toggle = UnityEngine.UIElements.Toggle;
 
@@ -66,8 +68,22 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject(key = "#serverErrorResponseText")]
     private Label serverErrorResponseText;
 
+    [Inject(key = "#songListContainer")]
+    private VisualElement songListContainer;
+    
+    [Inject(key = "#songListView")]
+    private ScrollView songListView;
+    
+    [Inject(key = "#showSongListButton")]
+    private Button showSongListButton;
+    
+    [Inject(key = "#closeSongListButton")]
+    private Button closeSongListButton;
+    
     private float frameCountTime;
     private int frameCount;
+
+    private IPEndPoint serverIpEndPoint;
     
     private void Start()
     {
@@ -102,7 +118,18 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         clientSideConnectRequestManager.ConnectEventStream
             .Subscribe(UpdateConnectionStatus);
         
+        showSongListButton.RegisterCallbackButtonTriggered(() => ShowSongList());
+        closeSongListButton.RegisterCallbackButtonTriggered(() => songListContainer.Hide());
+        
         UpdateVersionInfoText();
+    }
+
+    private void ShowSongList()
+    {
+        songListContainer.Show();
+        songListView.Clear();
+        AddSongListLabel("Loading songs list...");
+        StartCoroutine(GetSongList(serverIpEndPoint));
     }
 
     private void Update()
@@ -157,6 +184,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         if (connectEvent.IsSuccess)
         {
+            serverIpEndPoint = connectEvent.ServerIpEndPoint;
             connectionStatusText.text = $"Connected To {connectEvent.ServerIpEndPoint.Address}";
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
             audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
@@ -269,5 +297,70 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         BindingBuilder bb = new BindingBuilder();
         bb.BindExistingInstance(uiDoc);
         return bb.GetBindings();
+    }
+    
+    IEnumerator GetSongList(IPEndPoint serverIPEndPoint)
+    {
+        string uri = "http://" + serverIPEndPoint.Address + ":6789/api/rest/songs";
+        Debug.Log("GET song list from URI: " + uri);
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+        {
+            // Request and wait for the response.
+            yield return webRequest.SendWebRequest();
+
+            switch (webRequest.result)
+            {
+                case UnityWebRequest.Result.ConnectionError:
+                case UnityWebRequest.Result.DataProcessingError:
+                    Debug.LogError("Error: " + webRequest.error);
+                    break;
+                case UnityWebRequest.Result.ProtocolError:
+                    Debug.LogError("HTTP Error: " + webRequest.error);
+                    break;
+                case UnityWebRequest.Result.Success:
+                    HandleSongListResponse(webRequest.downloadHandler.text);
+                    break;
+            }
+        }
+    }
+
+    private void HandleSongListResponse(string downloadHandlerText)
+    {
+        try
+        {
+            songListView.Clear();
+
+            LoadedSongsDto loadedSongsDto = JsonConverter.FromJson<LoadedSongsDto>(downloadHandlerText);
+            if (!loadedSongsDto.IsSongScanFinished
+                && loadedSongsDto.SongCount == 0)
+            {
+                songListView.Add(new Label("No songs loaded yet."));
+                return;
+            }
+            
+            loadedSongsDto.SongList.Sort((a,b) => string.Compare(a.Artist, b.Artist, StringComparison.InvariantCulture));
+            foreach (SongDto songDto in loadedSongsDto.SongList)
+            {
+                AddSongListLabel(songDto.Artist + " - " + songDto.Title);
+            }
+            
+            if (!loadedSongsDto.IsSongScanFinished)
+            {
+                AddSongListLabel("...");
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            AddSongListLabel("Something went wrong reading the song list response.");
+        }
+    }
+
+    private void AddSongListLabel(string text)
+    {
+        Label label = new Label(text);
+        label.AddToClassList("songListElement");
+        label.style.whiteSpace = WhiteSpace.Normal;
+        songListView.Add(label);
     }
 }

@@ -22,6 +22,7 @@
                 <ui:Button text="Start Recording" display-tooltip-when-elided="true" name="toggleRecordingButton" class="startButtonClass" />
                 <ui:VisualElement name="recordingDeviceButtonContainer" style="height: auto; align-items: center; justify-content: center; width: 100%; padding-left: 24px; padding-right: 24px; padding-top: 24px; padding-bottom: 24px; flex-grow: 1;" />
                 <ui:VisualElement name="sampleRateButtonContainer" style="height: auto; align-items: center; justify-content: center; width: 100%; padding-left: 24px; padding-right: 24px; padding-top: 24px; padding-bottom: 24px; flex-grow: 1;" />
+                <ui:Button text="Show song list" display-tooltip-when-elided="true" name="showSongListButton" class="startButtonClass" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="versionInfoContainer" style="padding-left: 2px; padding-right: 2px; padding-top: 2px; padding-bottom: 2px;">
@@ -30,6 +31,10 @@
                 <ui:Label text="Release: yyyy-MM-dd" display-tooltip-when-elided="true" name="releaseInfoText" style="font-size: 15px;" />
                 <ui:Label text="FPS: 30" display-tooltip-when-elided="true" name="fpsText" style="font-size: 15px; margin-left: auto;" />
             </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="songListContainer" style="position: absolute; width: 100%; height: 100%; padding-left: 15px; padding-right: 15px; padding-top: 15px; padding-bottom: 15px; display: none; background-color: rgba(0, 0, 0, 0.75);">
+            <ui:Button text="Hide song list" display-tooltip-when-elided="true" name="closeSongListButton" class="startButtonClass" style="flex-grow: 0; margin-bottom: 10px;" />
+            <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" name="songListView" style="width: 100%; height: auto;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
