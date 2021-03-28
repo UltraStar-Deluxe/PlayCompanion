@@ -26,7 +26,7 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     public ReactiveProperty<bool> IsRecording { get; private set; } = new ReactiveProperty<bool>();
     
     // The MicSamples array has the length of the SampleRateHz (one float value per sample.)
-    private float[] micSampleBuffer;
+    public float[] micSampleBuffer { get; private set; }
 
     [Inject(searchMethod = SearchMethods.GetComponent)]
     private AudioSource audioSource;
@@ -154,6 +154,11 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
         // Fill buffer with raw sample data from microphone
         int currentSamplePosition = Microphone.GetPosition(DeviceName.Value);
         micAudioClip.GetData(micSampleBuffer, currentSamplePosition);
+        if (currentSamplePosition == lastSamplePosition)
+        {
+            // No new samples yet (or all samples changed, which is unlikely because the buffer has a length of 1 second and FPS should be > 1).
+            return;
+        }
 
         // Process the portion that has been buffered by Unity since the last frame.
         // New samples come into the buffer "from the right", i.e., highest index holds the newest sample.
@@ -161,6 +166,9 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
         int newSamplesStartIndex = micSampleBuffer.Length - newSamplesCount;
         int newSamplesEndIndex = micSampleBuffer.Length - 1;
 
+        int newSampleCountByTime = (int)(SampleRateHz.Value * Time.deltaTime);
+        Debug.Log($"New samples by time: {newSampleCountByTime}, by mic: {newSamplesCount}, current sample position: {currentSamplePosition}");
+        
         // Notify listeners
         RecordingEvent recordingEvent = new RecordingEvent(micSampleBuffer, newSamplesStartIndex, newSamplesEndIndex);
         recordingEventStream.OnNext(recordingEvent);

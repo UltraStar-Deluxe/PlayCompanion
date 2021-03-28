@@ -35,7 +35,7 @@
 }
 
 .stopRecordingButton {
-    background-color: rgba(255, 0, 0, 255);
+    background-color: rgb(224, 0, 0);
 }
 
 .unity-text-field {
@@ -44,4 +44,8 @@
 
 .unity-text-element {
     font-size: 24px;
+}
+
+.stopRecordingButton:hover {
+    background-color: rgb(255, 0, 0);
 }

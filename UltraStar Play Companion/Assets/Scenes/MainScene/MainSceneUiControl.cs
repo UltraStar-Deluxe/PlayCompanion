@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -49,6 +50,15 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     
     [Inject(key = "#controlsContainer")]
     private VisualElement controlsContainer;
+
+    [Inject(key = "#fpsText")]
+    private Label fpsText;
+    
+    [Inject(searchMethod = SearchMethods.FindObjectOfType)]
+    private AudioWaveFormVisualizer audioWaveFormVisualizer;
+
+    private float frameCountTime;
+    private int frameCount;
     
     private void Start()
     {
@@ -75,6 +85,25 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
             .Subscribe(UpdateConnectionStatus);
         
         UpdateVersionInfoText();
+    }
+
+    private void Update()
+    {
+        audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.micSampleBuffer);
+        UpdateFps();
+    }
+
+    private void UpdateFps()
+    {
+        frameCountTime += Time.deltaTime;
+        frameCount++;
+        if (frameCountTime > 1)
+        {
+            int fps = (int)(frameCount / frameCountTime);
+            fpsText.text = "FPS: " + fps;
+            frameCount = 0;
+            frameCountTime = 0;
+        }
     }
 
     private void OnClientNameTextFieldChanged()

@@ -10,7 +10,7 @@ using UniRx;
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
 
-public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, IInjectionFinishedListener
+public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void InitOnLoad()
@@ -64,29 +64,25 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, II
 
     private ConcurrentQueue<ConnectResponseDto> serverResponseQueue = new ConcurrentQueue<ConnectResponseDto>();
 
-    public void OnInjectionFinished()
+    private bool isApplicationPaused;
+    
+    private void Start()
     {
         InitSingleInstance();
-        
         if (!Application.isPlaying || instance != this)
         {
             return;
         }
 
-        clientUdpClient = new UdpClient(ConnectPortOnClient);
         GameObjectUtils.SetTopLevelGameObjectAndDontDestroyOnLoad(gameObject);
-    }
-
-    private void Start()
-    {
-        if (settings == null || clientSideMicSampleRecorder == null)
-        {
-            throw new UnityException("Shit!");
-        }
         
+        clientUdpClient = new UdpClient(ConnectPortOnClient);
         ThreadPool.QueueUserWorkItem(poolHandle =>
         {
-            ClientListenForConnectResponse();
+            while (!hasBeenDestroyed)
+            {
+                ClientAcceptMessageFromServer();
+            }
         });
     }
 
@@ -110,7 +106,8 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, II
         
         if (!IsConnected
             && Time.time > nextConnectRequestTime
-            && clientSideMicSampleRecorder.SampleRateHz.Value > 0)
+            && clientSideMicSampleRecorder.SampleRateHz.Value > 0
+            && !isApplicationPaused)
         {
             nextConnectRequestTime = Time.time + ConnectRequestPauseInSeconds;
             ClientSendConnectRequest();
@@ -127,27 +124,24 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, II
         }
         instance = this;
     }
-    
-    private void ClientListenForConnectResponse()
+
+    private void OnApplicationPause(bool pauseStatus)
     {
-        if (isListeningForConnectResponse)
+        isApplicationPaused = pauseStatus;
+        if (pauseStatus)
         {
-            Debug.LogError("Already listening for connect response");
-            return;
+            // Application is paused now (e.g. the app was moved to the background on Android)
+            CloseConnectionAndReconnect();
         }
-        isListeningForConnectResponse = true;
-    
-        while (!hasBeenDestroyed)
-        {
-            ClientAcceptMessageFromServer();
-        }
+
+        Debug.Log("OnApplicationPause with pauseStatus: " + pauseStatus);
     }
 
     private void ClientAcceptMessageFromServer()
     {
         try
         {
-            Debug.Log("Client listening for connect response on " + ConnectPortOnClient);
+            Debug.Log("Client listening for connect response on port " + clientUdpClient.GetPort());
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
             byte[] receivedBytes = clientUdpClient.Receive(ref serverIpEndPoint);
             string message = Encoding.UTF8.GetString(receivedBytes);
@@ -155,13 +149,6 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, II
         }
         catch (Exception e)
         {
-            if (e is SocketException se
-                && se.SocketErrorCode == SocketError.Interrupted
-                && hasBeenDestroyed)
-            {
-                // Dont log error when closing the socket has interrupted the wait for requests.
-                return;
-            }
             Debug.LogException(e);
         }
     }
@@ -173,6 +160,10 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection, II
         if (connectResponseDto.clientName.IsNullOrEmpty())
         {
             throw new ConnectRequestException("Malformed ConnectResponse: missing clientId.");
+        }
+        if (connectResponseDto.microphonePort <= 0)
+        {
+            throw new ConnectRequestException("Malformed ConnectResponse: invalid microphonePort.");
         }
 
         connectResponseDto.serverIpEndPoint = serverIpEndPoint;

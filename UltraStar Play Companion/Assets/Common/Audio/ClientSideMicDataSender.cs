@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using UniInject;
 using UnityEngine;
 using UniRx;
@@ -24,31 +25,63 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
 
     [Inject]
     private ClientSideMicSampleRecorder clientSideMicSampleRecorder;
-
-    // Max size of a single UDP datagram is roughly 65500 (depending on IP version, network limits, etc.)
-    // See https://stackoverflow.com/questions/1098897/what-is-the-largest-safe-udp-packet-size-on-the-internet
-    private const int MaxUdpDatagramLength = 65500;
     
-    private UdpClient clientMicDataSender;
+    private TcpClient clientMicDataSender;
+    private NetworkStream clientMicDataSenderNetworkStream;
     public IPEndPoint serverMicDataReceiverEndPoint;
+
+    private byte[] receiveByteArray;
     
     private void Start()
     {
-        clientMicDataSender = new UdpClient();
         clientSideConnectRequestManager.ConnectEventStream.Subscribe(UpdateConnectionStatus);
         clientSideMicSampleRecorder.RecordingEventStream.Subscribe(HandleNewMicSamples);
+
+        // Receive data from server.
+        // So far, the server only sends a still-alive check, which fails automatically when the connection is lost.
+        receiveByteArray = new byte[2048];
+        ThreadPool.QueueUserWorkItem(poolHandler =>
+        {
+            while (true)
+            {
+                if (serverMicDataReceiverEndPoint != null
+                    && clientMicDataSender != null
+                    && clientMicDataSenderNetworkStream != null)
+                {
+                    ReceiveServerData();
+                }
+                Thread.Sleep(250);
+            }
+        });
     }
 
     private void HandleNewMicSamples(RecordingEvent recordingEvent)
     {
-        if (serverMicDataReceiverEndPoint != null)
+        if (serverMicDataReceiverEndPoint != null
+            && clientMicDataSender != null
+            && clientMicDataSenderNetworkStream != null)
         {
             SendMicData(recordingEvent);
         }
     }
 
+    private void ReceiveServerData()
+    {
+        int receivedByteCount;
+        while (clientMicDataSenderNetworkStream.DataAvailable
+               && (receivedByteCount = clientMicDataSenderNetworkStream.Read(receiveByteArray, 0, receiveByteArray.Length)) > 0)
+        {
+            Debug.Log($"Received {receivedByteCount} bytes from main game (still-alive check).");
+        }
+    }
+
     private void SendMicData(RecordingEvent recordingEvent)
     {
+        if (recordingEvent.NewSampleCount >= clientSideMicSampleRecorder.SampleRateHz.Value - 1)
+        {
+            Debug.LogError("Attempt to send complete mic buffer at once");
+            return;
+        }
         // Copy from float array to byte array. Note that in a float there are sizeof(float) bytes.
         byte[] newByteData = new byte[recordingEvent.NewSampleCount * sizeof(float)];
         Buffer.BlockCopy(
@@ -58,18 +91,15 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
 
         try
         {
-            int sendBytesLength = newByteData.Length < MaxUdpDatagramLength
-                ? newByteData.Length
-                : MaxUdpDatagramLength;
             DateTime now = DateTime.Now;
-            Debug.Log($"Send datagram: {sendBytesLength} bytes at {now}:{now.Millisecond}");
-            clientMicDataSender.Send(newByteData, sendBytesLength, serverMicDataReceiverEndPoint);
+            Debug.Log($"Send data: {newByteData.Length} bytes ({recordingEvent.NewSampleCount} samples) at {now}:{now.Millisecond}");
+            clientMicDataSenderNetworkStream.Write(newByteData, 0, newByteData.Length);
         }
         catch (Exception e)
         {
             Debug.LogException(e);
-            Debug.LogError(
-                $"Failed sending mic data: {newByteData.Length} bytes ({recordingEvent.NewSampleCount} samples)");
+            Debug.LogError($"Failed sending mic data: {newByteData.Length} bytes ({recordingEvent.NewSampleCount} samples)");
+            clientSideConnectRequestManager.CloseConnectionAndReconnect();
         }
     }
 
@@ -80,11 +110,37 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
             && connectEvent.ServerIpEndPoint != null)
         {
             serverMicDataReceiverEndPoint = new IPEndPoint(connectEvent.ServerIpEndPoint.Address, connectEvent.MicrophonePort);
+            CloseNetworkConnection();
+            try
+            {
+                clientMicDataSender = new TcpClient();
+                clientMicDataSender.Connect(serverMicDataReceiverEndPoint);
+                clientMicDataSenderNetworkStream = clientMicDataSender.GetStream();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                CloseNetworkConnection();                
+            }
         }
         else
         {
+            CloseNetworkConnection();
             serverMicDataReceiverEndPoint = null;
             clientSideMicSampleRecorder.StopRecording();
         }
+    }
+
+    private void OnDestroy()
+    {
+        CloseNetworkConnection();
+    }
+
+    private void CloseNetworkConnection()
+    {
+        clientMicDataSenderNetworkStream?.Close();
+        clientMicDataSenderNetworkStream = null;
+        clientMicDataSender?.Close();
+        clientMicDataSender = null;
     }
 }
