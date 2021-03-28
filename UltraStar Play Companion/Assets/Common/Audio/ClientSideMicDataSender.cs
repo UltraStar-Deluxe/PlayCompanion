@@ -74,7 +74,8 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
         while (clientMicDataSenderNetworkStream.DataAvailable
                && (receivedByteCount = clientMicDataSenderNetworkStream.Read(receiveByteArray, 0, receiveByteArray.Length)) > 0)
         {
-            Debug.Log($"Received {receivedByteCount} bytes from main game (still-alive check).");
+            // Do nothing.
+            // Debug.Log($"Received {receivedByteCount} bytes from main game (still-alive check).");
         }
     }
 
@@ -94,8 +95,8 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
 
         try
         {
-            DateTime now = DateTime.Now;
-            Debug.Log($"Send data: {newByteData.Length} bytes ({recordingEvent.NewSampleCount} samples) at {now}:{now.Millisecond}");
+            // DateTime now = DateTime.Now;
+            // Debug.Log($"Send data: {newByteData.Length} bytes ({recordingEvent.NewSampleCount} samples) at {now}:{now.Millisecond}");
             clientMicDataSenderNetworkStream.Write(newByteData, 0, newByteData.Length);
         }
         catch (Exception e)

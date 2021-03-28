@@ -166,9 +166,6 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
         int newSamplesStartIndex = micSampleBuffer.Length - newSamplesCount;
         int newSamplesEndIndex = micSampleBuffer.Length - 1;
 
-        int newSampleCountByTime = (int)(SampleRateHz.Value * Time.deltaTime);
-        Debug.Log($"New samples by time: {newSampleCountByTime}, by mic: {newSamplesCount}, current sample position: {currentSamplePosition}");
-        
         // Notify listeners
         RecordingEvent recordingEvent = new RecordingEvent(micSampleBuffer, newSamplesStartIndex, newSamplesEndIndex);
         recordingEventStream.OnNext(recordingEvent);
