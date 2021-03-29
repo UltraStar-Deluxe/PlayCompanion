@@ -104,8 +104,8 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         toggleRecordingButton.RegisterCallbackButtonTriggered(ToggleRecording);
 
         clientNameTextField.value = settings.ClientName;
-        clientNameTextField.RegisterCallback<NavigationSubmitEvent>(_ => OnClientNameTextFieldChanged());
-        clientNameTextField.RegisterCallback<BlurEvent>(_ => OnClientNameTextFieldChanged());
+        clientNameTextField.RegisterCallback<NavigationSubmitEvent>(_ => OnClientNameTextFieldSubmit());
+        clientNameTextField.RegisterCallback<BlurEvent>(_ => OnClientNameTextFieldSubmit());
         
         visualizeAudioToggle.value = settings.ShowAudioWaveForm;
         audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
@@ -154,7 +154,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         }
     }
 
-    private void OnClientNameTextFieldChanged()
+    private void OnClientNameTextFieldSubmit()
     {
         settings.ClientName = clientNameTextField.value;
         // Reconnect to let the main know about the new clientName.

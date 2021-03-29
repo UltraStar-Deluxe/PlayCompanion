@@ -10,7 +10,7 @@
         </ui:VisualElement>
         <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center; margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px; padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px; height: 100%;">
             <ui:Label text="Connecting..." display-tooltip-when-elided="true" name="connectionStatusText" style="flex-grow: 1; -unity-text-align: middle-center;" />
-            <ui:Label text="Received error" display-tooltip-when-elided="true" name="serverErrorResponseText" style="flex-grow: 1; -unity-text-align: middle-center; color: rgba(255, 0, 0, 255); white-space: normal; width: 100%;" />
+            <ui:Label text="Received error" display-tooltip-when-elided="true" name="serverErrorResponseText" style="flex-grow: 1; -unity-text-align: middle-center; color: rgb(255, 0, 0); white-space: normal; width: 100%;" />
             <ui:Label text="There are connection issues." display-tooltip-when-elided="true" name="connectionThroubleshootingText" style="flex-grow: 1; -unity-text-align: middle-center; color: rgb(255, 152, 0); white-space: normal; width: 100%;" />
             <ui:VisualElement name="controlsContainer" class="onlyVisibleWhenConnected" style="align-items: center; justify-content: space-around; width: 100%; height: 100%;">
                 <ui:VisualElement name="visualizeAudioToggleContainer" style="align-items: center; justify-content: center; width: 100%; flex-grow: 1;">

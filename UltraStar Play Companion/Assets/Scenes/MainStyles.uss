@@ -41,7 +41,7 @@
 
 .unity-text-element {
     font-size: 24px;
-    color: rgba(255, 255, 255, 255);
+    color: rgb(255, 255, 255);
 }
 
 .stopRecordingButton:hover {
@@ -50,4 +50,19 @@
 
 .songListElement {
     margin-bottom: 20px;
+}
+
+.unity-text-field:focus {
+    border-left-color: rgba(202, 11, 13, 255);
+    border-right-color: rgba(202, 11, 13, 255);
+    border-top-color: rgba(202, 11, 13, 255);
+    border-bottom-color: rgba(202, 11, 13, 255);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
