@@ -146,8 +146,6 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
             // Application is paused now (e.g. the app was moved to the background on Android)
             CloseConnectionAndReconnect();
         }
-
-        Debug.Log("OnApplicationPause with pauseStatus: " + pauseStatus);
     }
 
     private void ClientAcceptMessageFromServer()

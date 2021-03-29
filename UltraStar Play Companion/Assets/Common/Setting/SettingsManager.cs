@@ -45,15 +45,28 @@ public class SettingsManager : MonoBehaviour
     // Non-static settings field for debugging of the settings in the Unity Inspector.
     public Settings nonStaticSettings;
 
-    void Start()
+    private void Start()
     {
         // Load reference from last scene if needed
         nonStaticSettings = settings;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         Save();
+    }
+
+    private void OnDestroy()
+    {
+        Save();
+    }
+    
+    private void OnApplicationPause(bool isApplicationPaused)
+    {
+        if (isApplicationPaused)
+        {
+            Save();
+        }
     }
 
     public void Save()
