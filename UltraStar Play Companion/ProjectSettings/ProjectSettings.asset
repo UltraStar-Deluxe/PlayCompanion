@@ -131,6 +131,8 @@ PlayerSettings:
   preloadedAssets:
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -150,7 +152,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.Karaoke.UltraStarPlayCompanion
     Standalone: com.Karaoke.UltraStarPlayCompanion
-    iPhone: com.DefaultCompany.UltraStarPlayCompanion
+    iPhone: com.Karaoke.UltraStarPlayCompanion
   buildNumber:
     Standalone: 0
     iPhone: 0
@@ -261,7 +263,14 @@ PlayerSettings:
   AndroidMinifyDebug: 0
   AndroidValidateAppBundleSize: 1
   AndroidAppBundleSizeToValidate: 150
-  m_BuildTargetIcons: []
+  m_BuildTargetIcons:
+  - m_BuildTarget: 
+    m_Icons:
+    - serializedVersion: 2
+      m_Icon: {fileID: 2800000, guid: 6b4c227959c3d7144adfa8afad06e189, type: 3}
+      m_Width: 128
+      m_Height: 128
+      m_Kind: 0
   m_BuildTargetPlatformIcons:
   - m_BuildTarget: Android
     m_Icons:
