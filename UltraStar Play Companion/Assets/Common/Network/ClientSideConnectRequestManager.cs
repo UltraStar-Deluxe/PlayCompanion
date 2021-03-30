@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -103,6 +104,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
                     IsSuccess = true,
                     ConnectRequestCount = connectRequestCount,
                     MicrophonePort = serverMicrophonePort,
+                    HttpServerPort = connectResponseDto.HttpServerPort,
                     ServerIpEndPoint = connectResponseDto.ServerIpEndPoint,
                 });
                 connectRequestCount = 0;            
