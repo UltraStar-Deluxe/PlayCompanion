@@ -302,7 +302,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
         // Show the release number (e.g. release date, or some version number)
         versionProperties.TryGetValue("release", out string release);
-        uiDoc.rootVisualElement.Q<Label>("releaseInfoText").text = "Release: " + release;
+        uiDoc.rootVisualElement.Q<Label>("releaseInfoText").text = "Version: " + release;
 
         // Show the build timestamp only for development builds
         if (Debug.isDebugBuild)

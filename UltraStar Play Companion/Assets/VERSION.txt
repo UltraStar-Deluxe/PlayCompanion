@@ -1,3 +1,3 @@
-release = 0000-00-00
-build_timestamp = 2103252021
+release = 0.1
+build_timestamp = 2104021358
 website_link = https://usplay.net/
