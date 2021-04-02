@@ -3,4 +3,4 @@ Companion app for open-source, sing-along karaoke game [UltraStar Play](https://
 
 Top features:
 - Use your smartphone as mic
-- Browser song list
+- View song list
