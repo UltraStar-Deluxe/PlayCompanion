@@ -26,9 +26,12 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="versionInfoContainer" style="padding-left: 2px; padding-right: 2px; padding-top: 2px; padding-bottom: 2px;">
-            <ui:Label text="Build: yyMMddHHmm" display-tooltip-when-elided="true" name="buildInfoText" style="font-size: 15px;" />
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Label text="Version: yyyy-MM-dd" display-tooltip-when-elided="true" name="semanticVersionText" style="font-size: 15px;" />
+                <ui:Label text="Build time: yyMMddHHmm" display-tooltip-when-elided="true" name="buildTimeStampText" style="font-size: 15px;" />
+            </ui:VisualElement>
             <ui:VisualElement style="flex-direction: row;">
-                <ui:Label text="Version: yyyy-MM-dd" display-tooltip-when-elided="true" name="releaseInfoText" style="font-size: 15px;" />
+                <ui:Label text="Commit: xxxxxxx" display-tooltip-when-elided="true" name="commitHashText" style="font-size: 15px;" />
                 <ui:Label text="FPS: 30" display-tooltip-when-elided="true" name="fpsText" style="font-size: 15px; margin-left: auto;" />
             </ui:VisualElement>
         </ui:VisualElement>

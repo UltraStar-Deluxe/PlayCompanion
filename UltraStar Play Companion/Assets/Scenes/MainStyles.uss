@@ -53,10 +53,10 @@
 }
 
 .unity-text-field:focus {
-    border-left-color: rgba(202, 11, 13, 255);
-    border-right-color: rgba(202, 11, 13, 255);
-    border-top-color: rgba(202, 11, 13, 255);
-    border-bottom-color: rgba(202, 11, 13, 255);
+    border-left-color: rgb(202, 11, 13);
+    border-right-color: rgb(202, 11, 13);
+    border-top-color: rgb(202, 11, 13);
+    border-bottom-color: rgb(202, 11, 13);
     border-left-width: 2px;
     border-right-width: 2px;
     border-top-width: 2px;

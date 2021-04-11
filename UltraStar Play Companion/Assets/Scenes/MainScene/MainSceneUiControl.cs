@@ -35,6 +35,18 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     [Inject]
     private Settings settings;
     
+    [Inject(key = "#semanticVersionText")]
+    private Label semanticVersionText;
+
+    [Inject(key = "#buildTimeStampText")]
+    private Label buildTimeStampText;
+
+    [Inject(key = "#commitHashText")]
+    private Label commitHashText;
+    
+    [Inject(key = "#fpsText")]
+    private Label fpsText;
+    
     [Inject(key = "#toggleRecordingButton")]
     private Button toggleRecordingButton;
     
@@ -58,9 +70,6 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     
     [Inject(key = "#audioWaveForm")]
     private VisualElement audioWaveForm;
-
-    [Inject(key = "#fpsText")]
-    private Label fpsText;
 
     [Inject(key = "#connectionThroubleshootingText")]
     private Label connectionThroubleshootingText;
@@ -302,17 +311,21 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
         // Show the release number (e.g. release date, or some version number)
         versionProperties.TryGetValue("release", out string release);
-        uiDoc.rootVisualElement.Q<Label>("releaseInfoText").text = "Version: " + release;
+        semanticVersionText.text = "Version: " + release;
 
+        // Show the commit hash of the build
+        versionProperties.TryGetValue("commit_hash", out string commitHash);
+        commitHashText.text = "Commit: " + commitHash;
+        
         // Show the build timestamp only for development builds
         if (Debug.isDebugBuild)
         {
             versionProperties.TryGetValue("build_timestamp", out string buildTimeStamp);
-            uiDoc.rootVisualElement.Q<Label>("buildInfoText").text = "Build: " + buildTimeStamp;
+            buildTimeStampText.text = "Build: " + buildTimeStamp;
         }
         else
         {
-            uiDoc.rootVisualElement.Q<Label>("buildInfoText").text = "";
+            buildTimeStampText.text = "";
         }
     }
 
