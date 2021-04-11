@@ -37,7 +37,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     /**
      * This version number must to be increased when introducing breaking changes.
      */
-    public const int ProtocolVersion = 1;
+    public const int ProtocolVersion = 2;
 
     [Inject]
     private Settings settings;
@@ -143,7 +143,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     private void OnApplicationPause(bool pauseStatus)
     {
         isApplicationPaused = pauseStatus;
-        if (pauseStatus)
+        if (pauseStatus && !Application.isEditor)
         {
             // Application is paused now (e.g. the app was moved to the background on Android)
             CloseConnectionAndReconnect();
@@ -179,11 +179,19 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
             }
             if (connectResponseDto.ClientName.IsNullOrEmpty())
             {
-                throw new ConnectRequestException("Malformed ConnectResponse: missing clientId.");
+                throw new ConnectRequestException("Malformed ConnectResponse: missing ClientName.");
+            }
+            if (connectResponseDto.ClientId.IsNullOrEmpty())
+            {
+                throw new ConnectRequestException("Malformed ConnectResponse: missing ClientId.");
+            }
+            if (!string.Equals(connectResponseDto.ClientId, settings.ClientId, StringComparison.InvariantCulture))
+            {
+                throw new ConnectRequestException($"Malformed ConnectResponse: wrong ClientId. Is {connectResponseDto.ClientId}, expected {settings.ClientId}");
             }
             if (connectResponseDto.MicrophonePort <= 0)
             {
-                throw new ConnectRequestException("Malformed ConnectResponse: invalid microphonePort.");
+                throw new ConnectRequestException("Malformed ConnectResponse: invalid MicrophonePort.");
             }
 
             connectResponseDto.ServerIpEndPoint = serverIpEndPoint;
@@ -217,6 +225,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
             {
                 ProtocolVersion = ProtocolVersion,
                 ClientName = settings.ClientName,
+                ClientId = settings.ClientId,
                 MicrophoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
             };
             byte[] requestBytes = Encoding.UTF8.GetBytes(connectRequestDto.ToJson());

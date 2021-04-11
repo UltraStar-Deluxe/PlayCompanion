@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class SettingsManager : MonoBehaviour
 {
@@ -84,13 +85,22 @@ public class SettingsManager : MonoBehaviour
             {
                 UnityEngine.Debug.LogWarning($"Settings file not found. Creating default settings at {loadedSettingsPath}.");
                 settings = new Settings();
+                // Create unique device identifier
+                settings.CreateAndSetClientId();
                 Save();
                 return;
             }
             string fileContent = File.ReadAllText(loadedSettingsPath);
             settings = JsonConverter.FromJson<Settings>(fileContent);
+            // ClientId was not set yet. Create a new one.
+            if (settings.ClientId.IsNullOrEmpty())
+            {
+                settings.CreateAndSetClientId();
+                Save();
+            }
             nonStaticSettings = settings;
             OverwriteSettingsWithCommandLineArguments();
+            Debug.Log($"ClientId: {settings.ClientId}");
         }
     }
 
