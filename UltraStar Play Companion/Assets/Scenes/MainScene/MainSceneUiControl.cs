@@ -6,11 +6,12 @@ using UniInject;
 using UniRx;
 using Button = UnityEngine.UIElements.Button;
 using Toggle = UnityEngine.UIElements.Toggle;
+using ProTrans;
 
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
 
-public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBinder
+public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBinder, ITranslator
 {
     public const int ConnectRequestCountShowTroubleshootingHintThreshold = 3;
     
@@ -91,7 +92,12 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
     private float frameCountTime;
     private int frameCount;
-    
+
+    private void Awake()
+    {
+        TranslationManager.Instance.currentLanguage = Application.systemLanguage;
+    }
+
     private void Start()
     {
         clientSideMicSampleRecorder.DeviceName
@@ -131,8 +137,18 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         closeSongListButton.RegisterCallbackButtonTriggered(() => songListContainer.Hide());
         
         UpdateVersionInfoText();
+        UpdateTranslation();
     }
 
+    public void UpdateTranslation()
+    {
+        if (!Application.isPlaying && connectionStatusText == null)
+        {
+            SceneInjectionManager.Instance.DoInjection();
+        }
+        connectionStatusText.text = TranslationManager.GetTranslation(R.String.connecting);
+    }
+    
     private void HandleSongListEvent(SongListEvent evt)
     {
         songListView.Clear();
@@ -229,8 +245,8 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         else
         {
             connectionStatusText.text = connectEvent.ConnectRequestCount > 0
-                ? $"Connecting...\n(attempt {connectEvent.ConnectRequestCount} failed)"
-                : "Connecting...";
+                ? TranslationManager.GetTranslation(R.String.connectingWithFailedAttempts, "count", connectEvent.ConnectRequestCount)
+                : TranslationManager.GetTranslation(R.String.connecting);
             
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
             if (connectEvent.ConnectRequestCount > ConnectRequestCountShowTroubleshootingHintThreshold)
