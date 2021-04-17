@@ -8,7 +8,8 @@
         "UniInject",
         "UnityEngine.UIElementsModule",
         "UnityEngine.UIElementsGameObjectsModule",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "com.achimmihca.protrans"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

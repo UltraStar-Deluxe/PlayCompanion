@@ -4,7 +4,7 @@
         <ui:VisualElement name="titleContainer" style="align-items: center; width: 100%; justify-content: flex-start; top: auto; flex-direction: column;">
             <ui:VisualElement name="titleImageAndText" style="flex-direction: row; align-items: center;">
                 <ui:VisualElement name="titleAndDescription">
-                    <ui:Label text="UltraStar Play Companion" name="sceneTitle" class="titleText" />
+                    <ui:Label text="UltraStar Play Companion" name="sceneTitle" class="titleText" style="-unity-font-style: normal;" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

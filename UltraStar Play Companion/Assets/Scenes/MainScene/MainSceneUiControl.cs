@@ -89,6 +89,9 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     
     [Inject(key = "#closeSongListButton")]
     private Button closeSongListButton;
+    
+    [Inject(key = "#sceneTitle")]
+    private Label sceneTitle;
 
     private float frameCountTime;
     private int frameCount;
@@ -146,7 +149,11 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         {
             SceneInjectionManager.Instance.DoInjection();
         }
-        connectionStatusText.text = TranslationManager.GetTranslation(R.String.connecting);
+        connectionStatusText.text = TranslationManager.GetTranslation(R.Messages.connecting);
+        sceneTitle.text = TranslationManager.GetTranslation(R.Messages.title);
+        visualizeAudioToggle.label = TranslationManager.GetTranslation(R.Messages.visualizeMicInput);
+        showSongListButton.text = TranslationManager.GetTranslation(R.Messages.songList_show);
+        closeSongListButton.text = TranslationManager.GetTranslation(R.Messages.songList_hide);
     }
     
     private void HandleSongListEvent(SongListEvent evt)
@@ -198,7 +205,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         if (frameCountTime > 1)
         {
             int fps = (int)(frameCount / frameCountTime);
-            fpsText.text = "FPS: " + fps;
+            fpsText.text = TranslationManager.GetTranslation(R.Messages.fps, "value", fps);
             frameCount = 0;
             frameCountTime = 0;
         }
@@ -220,12 +227,12 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         if (isRecording)
         {
-            toggleRecordingButton.text = "Stop Recording";
+            toggleRecordingButton.text = TranslationManager.GetTranslation(R.Messages.stopRecording);
             toggleRecordingButton.AddToClassList("stopRecordingButton");
         }
         else
         {
-            toggleRecordingButton.text = "Start Recording";
+            toggleRecordingButton.text = TranslationManager.GetTranslation(R.Messages.startRecording);
             toggleRecordingButton.RemoveFromClassList("stopRecordingButton");
         }
     }
@@ -234,7 +241,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         if (connectEvent.IsSuccess)
         {
-            connectionStatusText.text = $"Connected To {connectEvent.ServerIpEndPoint.Address}";
+            connectionStatusText.text = TranslationManager.GetTranslation(R.Messages.connectedTo, "remote" , connectEvent.ServerIpEndPoint.Address);
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
             audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
             connectionThroubleshootingText.Hide();
@@ -245,17 +252,14 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         else
         {
             connectionStatusText.text = connectEvent.ConnectRequestCount > 0
-                ? TranslationManager.GetTranslation(R.String.connectingWithFailedAttempts, "count", connectEvent.ConnectRequestCount)
-                : TranslationManager.GetTranslation(R.String.connecting);
+                ? TranslationManager.GetTranslation(R.Messages.connectingWithFailedAttempts, "count", connectEvent.ConnectRequestCount)
+                : TranslationManager.GetTranslation(R.Messages.connecting);
             
             uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
             if (connectEvent.ConnectRequestCount > ConnectRequestCountShowTroubleshootingHintThreshold)
             {
                 connectionThroubleshootingText.Show();
-                connectionThroubleshootingText.text = "Troubleshooting hints:\n"
-                    + "- Check main game is running\n\n"
-                    + "- Check main game and Companion app use the same WLAN\n\n"
-                    + "- Try to temporarily disable firewall (on Windows)\n\n";
+                connectionThroubleshootingText.text = TranslationManager.GetTranslation(R.Messages.troubleShootingHints);
             }
 
             if (!connectEvent.errorMessage.IsNullOrEmpty())
@@ -304,7 +308,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
             Button sampleRateButton = new Button();
             sampleRateButton.RegisterCallbackButtonTriggered(
                 () => clientSideMicSampleRecorder.SelectRecordingDevice(clientSideMicSampleRecorder.DeviceName.Value, sampleRate));
-            sampleRateButton.text = $"Sample rate: {sampleRate} Hz";
+            sampleRateButton.text = TranslationManager.GetTranslation(R.Messages.sampleRateHz, "value", sampleRate);
             recordingDeviceButtonContainer.Add(sampleRateButton);
         });
     }
@@ -327,17 +331,17 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
         // Show the release number (e.g. release date, or some version number)
         versionProperties.TryGetValue("release", out string release);
-        semanticVersionText.text = "Version: " + release;
+        semanticVersionText.text = TranslationManager.GetTranslation(R.Messages.version, "value", release);
 
         // Show the commit hash of the build
         versionProperties.TryGetValue("commit_hash", out string commitHash);
-        commitHashText.text = "Commit: " + commitHash;
+        commitHashText.text = TranslationManager.GetTranslation(R.Messages.commit, "value", commitHash);
         
         // Show the build timestamp only for development builds
         if (Debug.isDebugBuild)
         {
             versionProperties.TryGetValue("build_timestamp", out string buildTimeStamp);
-            buildTimeStampText.text = "Build: " + buildTimeStamp;
+            buildTimeStampText.text = TranslationManager.GetTranslation(R.Messages.buildTimeStamp, "value", buildTimeStamp);
         }
         else
         {
