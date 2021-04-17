@@ -5,12 +5,12 @@
         "Serilog",
         "Plugins",
         "UniRx",
-        "UniInject",
         "Common",
         "UnityEngine.UIElementsModule",
         "UnityEngine.UIElementsGameObjectsModule",
         "Unity.InputSystem",
-        "com.achimmihca.protrans"
+        "com.achimmihca.protrans",
+        "com.achimmihca.uniinject"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

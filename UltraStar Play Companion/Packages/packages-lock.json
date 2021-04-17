@@ -1,7 +1,14 @@
 {
   "dependencies": {
     "com.achimmihca.protrans": {
-      "version": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans",
+      "version": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "v1.0.0"
+    },
+    "com.achimmihca.uniinject": {
+      "version": "https://github.com/achimmihca/UniInject.git?path=UniInject/Packages/com.achimmihca.uniinject",
       "depth": 0,
       "source": "git",
       "dependencies": {},
