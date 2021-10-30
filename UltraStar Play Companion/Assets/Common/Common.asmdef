@@ -5,6 +5,7 @@
         "Serilog",
         "Plugins",
         "UniRx",
+        "com.achimmihca.protrans",
         "UniInject",
         "Unity.InputSystem"
     ],

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ProTrans;
 using UniInject;
 using UnityEngine;
 using UniRx;
@@ -22,7 +23,7 @@ public class SongListRequestor : AbstractHttpRequestor
         if (serverIPEndPoint == null
             || httpServerPort == 0)
         {
-            FireErrorMessageEvent("Can not get song list. Not yet connected to main game.");
+            FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_notConnected));
             return;
         }
         
@@ -31,7 +32,7 @@ public class SongListRequestor : AbstractHttpRequestor
 
         StartCoroutine(WebRequestUtils.LoadTextFromUriCoroutine(uri,
             HandleSongListResponse,
-            _ => FireErrorMessageEvent("Ups, something went wrong getting the song list.")));
+            _ => FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_general))));
     }
 
     private void HandleSongListResponse(string downloadHandlerText)
@@ -43,7 +44,7 @@ public class SongListRequestor : AbstractHttpRequestor
                 && LoadedSongsDto.SongCount == 0)
             {
                 SuccessfullyLoadedAllSongs = false;
-                FireErrorMessageEvent("No songs loaded yet.");
+                FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_noSongsFound));
                 return;
             }
 
@@ -61,7 +62,7 @@ public class SongListRequestor : AbstractHttpRequestor
         {
             Debug.LogException(e);
             SuccessfullyLoadedAllSongs = false;
-            FireErrorMessageEvent("Ups, something went wrong reading the song list response.");
+            FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_general));
         }
     }
     
