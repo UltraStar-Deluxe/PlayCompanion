@@ -5,9 +5,9 @@
         "Serilog",
         "Plugins",
         "UniRx",
-        "UniInject",
         "Common",
         "com.achimmihca.protrans",
+        "com.achimmihca.uniinject",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],

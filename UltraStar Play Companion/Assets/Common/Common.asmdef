@@ -6,7 +6,7 @@
         "Plugins",
         "UniRx",
         "com.achimmihca.protrans",
-        "UniInject",
+        "com.achimmihca.uniinject",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],

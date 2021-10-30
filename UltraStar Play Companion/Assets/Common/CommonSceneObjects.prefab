@@ -465,7 +465,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7793846928700202826}
-  - component: {fileID: 7793846928700202821}
+  - component: {fileID: 1848418442335061490}
   m_Layer: 0
   m_Name: SceneInjectionManager
   m_TagString: SceneInjectionManager
@@ -488,7 +488,7 @@ Transform:
   m_Father: {fileID: 7793846928896407034}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7793846928700202821
+--- !u!114 &1848418442335061490
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -497,7 +497,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7793846928700202827}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73da825f684a4eb44aada2756bdb6549, type: 3}
+  m_Script: {fileID: 11500000, guid: 4da9e59d126f9424c8aab18761b8a434, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   onlyInjectScriptsWithMarkerInterface: 1
