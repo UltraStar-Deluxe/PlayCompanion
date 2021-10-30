@@ -152,19 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe6c4600f907e64ca01409d01326a60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RepeatDelay: 0.5
-  m_RepeatRate: 0.05
-  m_FallbackOnIMGUIKeyboardEvents: 0
-  m_InputActionAsset: {fileID: -944628639613478452, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_NavigateAction: {fileID: -7559488607194844441, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_TabAction: {fileID: 1498379230643677496, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_SubmitAction: {fileID: -6434979457687148703, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_CancelAction: {fileID: -2807014294644756913, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_PointAction: {fileID: 2310183483462974582, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_ClickAction: {fileID: -6529645265718215429, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_ScrollWheelAction: {fileID: 1880177123186769444, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_MiddleClickAction: {fileID: 1069912891353070939, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
-  m_RightClickAction: {fileID: -6486105351458445517, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
 --- !u!4 &56803033
 Transform:
   m_ObjectHideFlags: 0
@@ -175,6 +162,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -206,6 +194,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -219,7 +208,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 202961747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f21c074d86024caca2a0034ce4f53f73, type: 3}
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: 3fb3f80ff074a3b44af3c330bd91143e, type: 2}
@@ -253,6 +242,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1601577405}
   m_RootOrder: 0
@@ -297,6 +287,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 426713327}
   m_Father: {fileID: 0}
@@ -356,6 +347,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -403,6 +395,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3

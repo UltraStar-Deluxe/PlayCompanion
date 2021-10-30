@@ -6,8 +6,6 @@
         "Plugins",
         "UniRx",
         "UniInject",
-        "UnityEngine.UIElementsModule",
-        "UnityEngine.UIElementsGameObjectsModule",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],
