@@ -11,6 +11,7 @@ TagManager:
   - CoroutineManager
   - ClientSideMicSampleRecorder
   - ClientSideMicrophoneDataSender
+  - TranslationManager
   layers:
   - Default
   - TransparentFX

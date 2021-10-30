@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.achimmihca.protrans": {
+      "version": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "v1.0.0"
+    },
     "com.unity.2d.animation": {
       "version": "5.0.3",
       "depth": 0,
