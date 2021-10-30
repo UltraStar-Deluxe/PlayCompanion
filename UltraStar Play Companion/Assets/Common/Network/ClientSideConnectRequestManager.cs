@@ -143,7 +143,9 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     private void OnApplicationPause(bool pauseStatus)
     {
         isApplicationPaused = pauseStatus;
-        if (pauseStatus && !Application.isEditor)
+        if (pauseStatus
+            && !Application.isEditor
+            && Application.platform != RuntimePlatform.WindowsPlayer)
         {
             // Application is paused now (e.g. the app was moved to the background on Android)
             CloseConnectionAndReconnect();
