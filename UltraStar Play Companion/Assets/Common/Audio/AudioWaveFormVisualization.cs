@@ -4,7 +4,7 @@ using UniInject;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class AudioWaveFormVisualizer : MonoBehaviour
+public class AudioWaveFormVisualization : MonoBehaviour
 {
     public Color waveformColor = Color.white;
 

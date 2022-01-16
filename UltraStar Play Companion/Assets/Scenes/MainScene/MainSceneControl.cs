@@ -11,9 +11,9 @@ using Toggle = UnityEngine.UIElements.Toggle;
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
 
-public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBinder
+public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
 {
-    public const int ConnectRequestCountShowTroubleshootingHintThreshold = 3;
+    private const int ConnectRequestCountShowTroubleshootingHintThreshold = 3;
     
     [InjectedInInspector]
     public TextAsset versionPropertiesTextAsset;
@@ -22,7 +22,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     public UIDocument uiDoc;
     
     [InjectedInInspector]
-    public AudioWaveFormVisualizer audioWaveFormVisualizer;
+    public AudioWaveFormVisualization audioWaveFormVisualizer;
 
     [InjectedInInspector]
     public SongListRequestor songListRequestor;
@@ -53,9 +53,6 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     
     [Inject(key = "#recordingDeviceButtonContainer")]
     private VisualElement recordingDeviceButtonContainer;
-    
-    [Inject(key = "#sampleRateButtonContainer")]
-    private VisualElement sampleRateButtonContainer;
     
     [Inject(key = "#connectionStatusText")]
     private Label connectionStatusText;
@@ -100,12 +97,10 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         clientSideMicSampleRecorder.DeviceName
             .Subscribe(_ => UpdateSelectedRecordingDeviceText());
-        clientSideMicSampleRecorder.SampleRateHz
+        clientSideMicSampleRecorder.SampleRate
             .Subscribe(_ => UpdateSelectedRecordingDeviceText());
         clientSideMicSampleRecorder.IsRecording
             .Subscribe(OnRecordingStateChanged);
-        clientSideMicSampleRecorder.SelectedRecordingDeviceEventStream
-            .Subscribe(recordingDeviceEvent => UpdateSampleRateButtons(recordingDeviceEvent));
 
         // All controls are hidden until a connection has been established.
         uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
@@ -187,7 +182,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
     {
         if (audioWaveForm.style.display != DisplayStyle.None)
         {
-            audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.micSampleBuffer);
+            audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.MicSampleBuffer);
         }
         UpdateFps();
     }
@@ -214,7 +209,7 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
 
     private void UpdateSelectedRecordingDeviceText()
     {
-        selectedRecordingDeviceText.text = $"{clientSideMicSampleRecorder.DeviceName}\n({clientSideMicSampleRecorder.SampleRateHz} Hz)";
+        selectedRecordingDeviceText.text = $"{clientSideMicSampleRecorder.DeviceName.Value}\n({clientSideMicSampleRecorder.SampleRate.Value} Hz)";
     }
 
     private void OnRecordingStateChanged(bool isRecording)
@@ -256,10 +251,10 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
                 connectionThroubleshootingText.text = TranslationManager.GetTranslation(R.Messages.troubleShootingHints);
             }
 
-            if (!connectEvent.errorMessage.IsNullOrEmpty())
+            if (!connectEvent.ErrorMessage.IsNullOrEmpty())
             {
                 serverErrorResponseText.Show();
-                serverErrorResponseText.text = connectEvent.errorMessage;
+                serverErrorResponseText.text = connectEvent.ErrorMessage;
             }
         }
     }
@@ -277,36 +272,12 @@ public class MainSceneUiControl : MonoBehaviour, INeedInjection, UniInject.IBind
         {
             Button deviceButton = new Button();
             deviceButton.RegisterCallbackButtonTriggered(
-                () => clientSideMicSampleRecorder.SelectRecordingDevice(device));
+                () => clientSideMicSampleRecorder.SetRecordingDevice(device));
             deviceButton.text = $"{device}";
             recordingDeviceButtonContainer.Add(deviceButton);
         });
     }
 
-    private void UpdateSampleRateButtons(RecordingDeviceEvent recordingDeviceEvent)
-    {
-        sampleRateButtonContainer.Clear();
-        if (recordingDeviceEvent.minSampleRateHz == recordingDeviceEvent.maxSampleRateHz)
-        {
-            // No real choice
-            return;
-        }
-
-        List<int> sampleRates = new List<int>
-        {
-            recordingDeviceEvent.minSampleRateHz,
-            recordingDeviceEvent.maxSampleRateHz,        
-        };
-        sampleRates.ForEach(sampleRate =>
-        {
-            Button sampleRateButton = new Button();
-            sampleRateButton.RegisterCallbackButtonTriggered(
-                () => clientSideMicSampleRecorder.SelectRecordingDevice(clientSideMicSampleRecorder.DeviceName.Value, sampleRate));
-            sampleRateButton.text = TranslationManager.GetTranslation(R.Messages.sampleRateHz, "value", sampleRate);
-            recordingDeviceButtonContainer.Add(sampleRateButton);
-        });
-    }
-    
     private void ToggleRecording()
     {
         if (clientSideMicSampleRecorder.IsRecording.Value)

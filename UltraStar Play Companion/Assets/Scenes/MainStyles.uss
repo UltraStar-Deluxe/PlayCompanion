@@ -48,6 +48,10 @@
     background-color: rgb(255, 0, 0);
 }
 
+.stopRecordingButton:focus {
+    background-color: rgb(255, 0, 0);
+}
+
 .songListElement {
     margin-bottom: 20px;
 }

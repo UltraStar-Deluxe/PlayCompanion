@@ -25,6 +25,9 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
 
     [Inject]
     private ClientSideMicSampleRecorder clientSideMicSampleRecorder;
+
+    [Inject]
+    private Settings settings;
     
     private TcpClient clientMicDataSender;
     private NetworkStream clientMicDataSenderNetworkStream;
@@ -81,7 +84,7 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
 
     private void SendMicData(RecordingEvent recordingEvent)
     {
-        if (recordingEvent.NewSampleCount >= clientSideMicSampleRecorder.SampleRateHz.Value - 1)
+        if (recordingEvent.NewSampleCount >= clientSideMicSampleRecorder.SampleRate.Value - 1)
         {
             Debug.LogError("Attempt to send complete mic buffer at once");
             return;
@@ -114,6 +117,20 @@ public class ClientSideMicDataSender : MonoBehaviour, INeedInjection
             && connectEvent.ServerIpEndPoint != null)
         {
             serverMicDataReceiverEndPoint = new IPEndPoint(connectEvent.ServerIpEndPoint.Address, connectEvent.MicrophonePort);
+            if (connectEvent.MicrophoneSampleRate > 0
+                && connectEvent.MicrophoneSampleRate != settings.SampleRate)
+            {
+                Debug.Log($"Received new sample rate: {settings.SampleRate}");
+                settings.SampleRate = connectEvent.MicrophoneSampleRate;
+                if (clientSideMicSampleRecorder.SampleRate.Value != settings.SampleRate)
+                {
+                    clientSideMicSampleRecorder.SetSampleRate(settings.SampleRate);
+                    // Try again with new SampleRate received from main game.
+                    CloseNetworkConnection();
+                    return;
+                }
+            }
+
             CloseNetworkConnection();
             try
             {

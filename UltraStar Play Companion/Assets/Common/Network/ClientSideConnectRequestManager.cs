@@ -37,7 +37,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
     /**
      * This version number must to be increased when introducing breaking changes.
      */
-    public const int ProtocolVersion = 2;
+    public const int ProtocolVersion = 3;
 
     [Inject]
     private Settings settings;
@@ -104,6 +104,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
                     IsSuccess = true,
                     ConnectRequestCount = connectRequestCount,
                     MicrophonePort = serverMicrophonePort,
+                    MicrophoneSampleRate = connectResponseDto.MicrophoneSampleRate,
                     HttpServerPort = connectResponseDto.HttpServerPort,
                     ServerIpEndPoint = connectResponseDto.ServerIpEndPoint,
                 });
@@ -114,14 +115,14 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
                 connectEventStream.OnNext(new ConnectEvent
                 {
                     ConnectRequestCount = connectRequestCount,
-                    errorMessage = connectResponseDto.ErrorMessage,
+                    ErrorMessage = connectResponseDto.ErrorMessage,
                 });
             }
         }
         
         if (!IsConnected
             && Time.time > nextConnectRequestTime
-            && clientSideMicSampleRecorder.SampleRateHz.Value > 0
+            && clientSideMicSampleRecorder.SampleRate.Value > 0
             && !isApplicationPaused)
         {
             nextConnectRequestTime = Time.time + ConnectRequestPauseInSeconds;
@@ -228,7 +229,7 @@ public class ClientSideConnectRequestManager : MonoBehaviour, INeedInjection
                 ProtocolVersion = ProtocolVersion,
                 ClientName = settings.ClientName,
                 ClientId = settings.ClientId,
-                MicrophoneSampleRate = clientSideMicSampleRecorder.SampleRateHz.Value,
+                MicrophoneSampleRate = clientSideMicSampleRecorder.SampleRate.Value,
             };
             byte[] requestBytes = Encoding.UTF8.GetBytes(connectRequestDto.ToJson());
             // UDP Broadcast (255.255.255.255)

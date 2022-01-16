@@ -9,6 +9,7 @@ public class Settings
      */
     public string ClientId { get; private set; }
     public string RecordingDeviceName { get; set; }
+    public int SampleRate { get; set; }
     public int TargetFps { get; set; } = 30;
     public bool ShowFps { get; set; }
     public bool ShowAudioWaveForm { get; set; } = true;
