@@ -28,7 +28,7 @@ public class ClientSideMicSampleRecorder: MonoBehaviour, INeedInjection
     // The MicSamples array has the length of the SampleRateHz (one float value per sample.)
     public float[] MicSampleBuffer { get; private set; }
 
-    [Inject(searchMethod = SearchMethods.GetComponent)]
+    [Inject(SearchMethod = SearchMethods.GetComponent)]
     private AudioSource audioSource;
     
     [Inject]

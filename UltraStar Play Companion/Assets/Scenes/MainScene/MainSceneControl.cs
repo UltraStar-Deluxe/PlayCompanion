@@ -36,58 +36,58 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
     [Inject]
     private Settings settings;
     
-    [Inject(key = "#semanticVersionText")]
+    [Inject(Key = "#semanticVersionText")]
     private Label semanticVersionText;
 
-    [Inject(key = "#buildTimeStampText")]
+    [Inject(Key = "#buildTimeStampText")]
     private Label buildTimeStampText;
 
-    [Inject(key = "#commitHashText")]
+    [Inject(Key = "#commitHashText")]
     private Label commitHashText;
     
-    [Inject(key = "#fpsText")]
+    [Inject(Key = "#fpsText")]
     private Label fpsText;
     
-    [Inject(key = "#toggleRecordingButton")]
+    [Inject(Key = "#toggleRecordingButton")]
     private Button toggleRecordingButton;
     
-    [Inject(key = "#recordingDeviceButtonContainer")]
+    [Inject(Key = "#recordingDeviceButtonContainer")]
     private VisualElement recordingDeviceButtonContainer;
     
-    [Inject(key = "#connectionStatusText")]
+    [Inject(Key = "#connectionStatusText")]
     private Label connectionStatusText;
 
-    [Inject(key = "#selectedRecordingDeviceText")]
+    [Inject(Key = "#selectedRecordingDeviceText")]
     private Label selectedRecordingDeviceText;
     
-    [Inject(key = "#clientNameTextField")]
+    [Inject(Key = "#clientNameTextField")]
     private TextField clientNameTextField;
     
-    [Inject(key = "#visualizeAudioToggle")]
+    [Inject(Key = "#visualizeAudioToggle")]
     private Toggle visualizeAudioToggle;
     
-    [Inject(key = "#audioWaveForm")]
+    [Inject(Key = "#audioWaveForm")]
     private VisualElement audioWaveForm;
 
-    [Inject(key = "#connectionThroubleshootingText")]
+    [Inject(Key = "#connectionThroubleshootingText")]
     private Label connectionThroubleshootingText;
     
-    [Inject(key = "#serverErrorResponseText")]
+    [Inject(Key = "#serverErrorResponseText")]
     private Label serverErrorResponseText;
 
-    [Inject(key = "#songListContainer")]
+    [Inject(Key = "#songListContainer")]
     private VisualElement songListContainer;
     
-    [Inject(key = "#songListView")]
+    [Inject(Key = "#songListView")]
     private ScrollView songListView;
     
-    [Inject(key = "#showSongListButton")]
+    [Inject(Key = "#showSongListButton")]
     private Button showSongListButton;
     
-    [Inject(key = "#closeSongListButton")]
+    [Inject(Key = "#closeSongListButton")]
     private Button closeSongListButton;
     
-    [Inject(key = "#sceneTitle")]
+    [Inject(Key = "#sceneTitle")]
     private Label sceneTitle;
 
     private float frameCountTime;
