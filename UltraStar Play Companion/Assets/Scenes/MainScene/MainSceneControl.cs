@@ -11,7 +11,7 @@ using Toggle = UnityEngine.UIElements.Toggle;
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
 
-public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
+public class MainSceneControl : MonoBehaviour, INeedInjection
 {
     private const int ConnectRequestCountShowTroubleshootingHintThreshold = 3;
     
@@ -19,14 +19,11 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
     public TextAsset versionPropertiesTextAsset;
 
     [InjectedInInspector]
-    public UIDocument uiDoc;
-    
-    [InjectedInInspector]
-    public AudioWaveFormVisualization audioWaveFormVisualizer;
-
-    [InjectedInInspector]
     public SongListRequestor songListRequestor;
-    
+
+    [Inject]
+    private UIDocument uiDocument;
+
     [Inject]
     private ClientSideConnectRequestManager clientSideConnectRequestManager;
 
@@ -90,6 +87,8 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
     [Inject(Key = "#sceneTitle")]
     private Label sceneTitle;
 
+    private AudioWaveFormVisualization audioWaveFormVisualization;
+
     private float frameCountTime;
     private int frameCount;
     
@@ -103,9 +102,9 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
             .Subscribe(OnRecordingStateChanged);
 
         // All controls are hidden until a connection has been established.
-        uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
-        connectionThroubleshootingText.Hide();
-        serverErrorResponseText.Hide();
+        uiDocument.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.HideByDisplay());
+        connectionThroubleshootingText.HideByDisplay();
+        serverErrorResponseText.HideByDisplay();
         
         toggleRecordingButton.RegisterCallbackButtonTriggered(ToggleRecording);
 
@@ -114,10 +113,10 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
         clientNameTextField.RegisterCallback<BlurEvent>(_ => OnClientNameTextFieldSubmit());
         
         visualizeAudioToggle.value = settings.ShowAudioWaveForm;
-        audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
+        audioWaveForm.SetVisibleByDisplay(settings.ShowAudioWaveForm);
         visualizeAudioToggle.RegisterValueChangedCallback(changeEvent =>
         {
-            audioWaveForm.SetVisible(changeEvent.newValue);
+            audioWaveForm.SetVisibleByDisplay(changeEvent.newValue);
             settings.ShowAudioWaveForm = changeEvent.newValue;
         });
         
@@ -127,9 +126,14 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
         songListRequestor.SongListEventStream.Subscribe(evt => HandleSongListEvent(evt));
         
         showSongListButton.RegisterCallbackButtonTriggered(() => ShowSongList());
-        closeSongListButton.RegisterCallbackButtonTriggered(() => songListContainer.Hide());
+        closeSongListButton.RegisterCallbackButtonTriggered(() => songListContainer.HideByDisplay());
         
         UpdateVersionInfoText();
+
+        audioWaveForm.RegisterCallbackOneShot<GeometryChangedEvent>(evt =>
+        {
+            audioWaveFormVisualization = new AudioWaveFormVisualization(gameObject, audioWaveForm);
+        });
     }
 
     public void UpdateTranslation()
@@ -168,7 +172,7 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
 
     private void ShowSongList()
     {
-        songListContainer.Show();
+        songListContainer.ShowByDisplay();
         
         if (!songListRequestor.SuccessfullyLoadedAllSongs)
         {
@@ -180,9 +184,10 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
 
     private void Update()
     {
-        if (audioWaveForm.style.display != DisplayStyle.None)
+        if (audioWaveForm.style.display != DisplayStyle.None
+            && audioWaveFormVisualization != null)
         {
-            audioWaveFormVisualizer.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.MicSampleBuffer);
+            audioWaveFormVisualization.DrawWaveFormMinAndMaxValues(clientSideMicSampleRecorder.MicSampleBuffer);
         }
         UpdateFps();
     }
@@ -231,10 +236,10 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
         if (connectEvent.IsSuccess)
         {
             connectionStatusText.text = TranslationManager.GetTranslation(R.Messages.connectedTo, "remote" , connectEvent.ServerIpEndPoint.Address);
-            uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Show());
-            audioWaveForm.SetVisible(settings.ShowAudioWaveForm);
-            connectionThroubleshootingText.Hide();
-            serverErrorResponseText.Hide();
+            uiDocument.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.ShowByDisplay());
+            audioWaveForm.SetVisibleByDisplay(settings.ShowAudioWaveForm);
+            connectionThroubleshootingText.HideByDisplay();
+            serverErrorResponseText.HideByDisplay();
             toggleRecordingButton.Focus();
             UpdateRecordingDeviceButtons();
         }
@@ -244,16 +249,16 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
                 ? TranslationManager.GetTranslation(R.Messages.connectingWithFailedAttempts, "count", connectEvent.ConnectRequestCount)
                 : TranslationManager.GetTranslation(R.Messages.connecting);
             
-            uiDoc.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.Hide());
+            uiDocument.rootVisualElement.Query(null, "onlyVisibleWhenConnected").ForEach(it => it.HideByDisplay());
             if (connectEvent.ConnectRequestCount > ConnectRequestCountShowTroubleshootingHintThreshold)
             {
-                connectionThroubleshootingText.Show();
+                connectionThroubleshootingText.ShowByDisplay();
                 connectionThroubleshootingText.text = TranslationManager.GetTranslation(R.Messages.troubleShootingHints);
             }
 
             if (!connectEvent.ErrorMessage.IsNullOrEmpty())
             {
-                serverErrorResponseText.Show();
+                serverErrorResponseText.ShowByDisplay();
                 serverErrorResponseText.text = connectEvent.ErrorMessage;
             }
         }
@@ -312,13 +317,6 @@ public class MainSceneControl : MonoBehaviour, INeedInjection, UniInject.IBinder
         {
             buildTimeStampText.text = "";
         }
-    }
-
-    public List<UniInject.IBinding> GetBindings()
-    {
-        BindingBuilder bb = new BindingBuilder();
-        bb.BindExistingInstance(uiDoc);
-        return bb.GetBindings();
     }
 
     private void AddSongListLabel(string text)

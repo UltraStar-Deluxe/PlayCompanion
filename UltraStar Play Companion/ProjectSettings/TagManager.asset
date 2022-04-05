@@ -12,6 +12,7 @@ TagManager:
   - ClientSideMicSampleRecorder
   - ClientSideMicrophoneDataSender
   - TranslationManager
+  - InputManager
   layers:
   - Default
   - TransparentFX

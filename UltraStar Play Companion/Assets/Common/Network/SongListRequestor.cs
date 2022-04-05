@@ -5,6 +5,7 @@ using ProTrans;
 using UniInject;
 using UnityEngine;
 using UniRx;
+using UnityEngine.Networking;
 
 // Disable warning about fields that are never assigned, their values are injected.
 #pragma warning disable CS0649
@@ -30,13 +31,22 @@ public class SongListRequestor : AbstractHttpRequestor
         string uri = $"http://{serverIPEndPoint.Address}:{httpServerPort}/api/rest/songs";
         Debug.Log("GET song list from URI: " + uri);
 
-        StartCoroutine(WebRequestUtils.LoadTextFromUriCoroutine(uri,
-            HandleSongListResponse,
-            _ => FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_general))));
+        UnityWebRequest getSongListWebRequest = UnityWebRequest.Get(uri);
+        getSongListWebRequest.SendWebRequest()
+            .AsAsyncOperationObservable()
+            .Subscribe(_ => HandleSongListResponse(getSongListWebRequest),
+                exception => FireErrorMessageEvent(TranslationManager.GetTranslation(R.Messages.songList_error_general)),
+                () => HandleSongListResponse(getSongListWebRequest));
     }
 
-    private void HandleSongListResponse(string downloadHandlerText)
+    private void HandleSongListResponse(UnityWebRequest webRequest)
     {
+        if (!webRequest.isDone)
+        {
+            return;
+        }
+
+        string downloadHandlerText = webRequest.downloadHandler.text;
         try
         {
             LoadedSongsDto = JsonConverter.FromJson<LoadedSongsDto>(downloadHandlerText);
@@ -68,6 +78,7 @@ public class SongListRequestor : AbstractHttpRequestor
     
     private void FireErrorMessageEvent(string errorMessage)
     {
+        Debug.LogError(errorMessage);
         songListEventStream.OnNext(new SongListEvent
         {
             ErrorMessage = errorMessage,

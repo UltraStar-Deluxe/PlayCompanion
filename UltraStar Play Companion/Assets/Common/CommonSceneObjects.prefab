@@ -48,7 +48,7 @@ MonoBehaviour:
   propertiesFileName: messages
   logInfoInEditMode: 1
   logInfoInPlayMode: 1
-  generatedConstantsFolder: Assets/GeneratedScripts
+  generatedConstantsFolder: Assets/Common/R
   generateConstantsOnResourceChange: 1
   useFallbackIfNotInCurrentLanguage: 1
   currentLanguage: 10
@@ -94,9 +94,61 @@ MonoBehaviour:
   m_GameObject: {fileID: 2114424283802900942}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7f85e8063156f04988f62133a49eed7, type: 3}
+  m_Script: {fileID: 11500000, guid: a3a946f8cdd74be41804ff41a3da042f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2411126334828481925
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4360400099301771181}
+  - component: {fileID: 3746577099689327537}
+  m_Layer: 0
+  m_Name: InputManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4360400099301771181
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2411126334828481925}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7793846928896407034}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3746577099689327537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2411126334828481925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5464073d85519c44b8512fa072d9e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultInputActionAsset: {fileID: -944628639613478452, guid: 72a438552a3a00a4ca7046e9a09422ed, type: 3}
+  copyInputActionAssetToPersistentDataPath: 0
+  relativeInputActionAssetInPersistentDataPath: InputActions.inputactions
+  generateConstantsOnResourceChange: 1
+  generatedConstantsFolder: Assets/Common/R
+  useDontDestroyOnLoad: 0
+  logInfoInEditMode: 0
+  logInfoInPlayMode: 1
 --- !u!1 &4754364364727048635
 GameObject:
   m_ObjectHideFlags: 0
@@ -502,6 +554,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onlyInjectScriptsWithMarkerInterface: 1
   logTime: 0
+  uiDocumentTagName: 
 --- !u!1 &7793846928701339898
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,6 +637,7 @@ Transform:
   - {fileID: 4190712076537908168}
   - {fileID: 4853660515560583650}
   - {fileID: 8000047506170702013}
+  - {fileID: 4360400099301771181}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
